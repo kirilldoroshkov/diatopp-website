@@ -1,4 +1,4 @@
-name: Test Zone FTPS connection
+name: Diagnose Zone FTPS certificate
 
 on:
   workflow_dispatch:
@@ -10,25 +10,13 @@ permissions:
   contents: read
 
 jobs:
-  test-ftps:
+  diagnose-ftps:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Connect and list deployment directory
-        env:
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      - name: Read FTP server certificate
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$FTP_USERNAME"
-          test -n "$FTP_PASSWORD"
-          curl --fail --silent --show-error \
-            --ssl-reqd \
-            --ftp-pasv \
-            --connect-timeout 20 \
-            --max-time 60 \
-            --user "$FTP_USERNAME:$FTP_PASSWORD" \
-            --list-only \
-            "ftp://diatopp-ee.vserver.zonevs.eu/"
-          echo "FTPS connection and directory access succeeded."
+          openssl s_client -starttls ftp -connect www.diatopp.ee:21 -servername www.diatopp.ee </dev/null 2>/dev/null \
+            | openssl x509 -noout -subject -issuer -ext subjectAltName
