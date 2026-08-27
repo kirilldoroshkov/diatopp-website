@@ -18,7 +18,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ip="$(dig +short A www.diatopp.ee | head -n 1)"
+          echo "DNS chain:"
+          dig +short www.diatopp.ee
+          ip="$(dig +short A diatopp.ee | grep -E '^[0-9]+(\.[0-9]+){3}$' | head -n 1)"
           test -n "$ip"
           echo "Server IP: $ip"
           echo "Reverse DNS:"
