@@ -1,4 +1,4 @@
-name: Resolve Zone FTPS hostname
+name: Test Zone FTPS connection
 
 on:
   workflow_dispatch:
@@ -10,18 +10,25 @@ permissions:
   contents: read
 
 jobs:
-  resolve-host:
+  test-ftps:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Resolve web server and reverse DNS
+      - name: Connect and list deployment directory
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "DNS chain:"
-          dig +short www.diatopp.ee
-          ip="$(dig +short A diatopp.ee | grep -E '^[0-9]+(\.[0-9]+){3}$' | head -n 1)"
-          test -n "$ip"
-          echo "Server IP: $ip"
-          echo "Reverse DNS:"
-          dig +short -x "$ip"
+          test -n "$FTP_USERNAME"
+          test -n "$FTP_PASSWORD"
+          curl --fail --silent --show-error \
+            --ssl-reqd \
+            --ftp-pasv \
+            --connect-timeout 20 \
+            --max-time 60 \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            --list-only \
+            "ftp://sn-69-38.tll07.zoneas.eu/"
+          echo "FTPS connection and directory access succeeded."
