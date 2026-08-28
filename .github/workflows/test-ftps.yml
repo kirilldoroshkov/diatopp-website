@@ -28,5 +28,5 @@ jobs:
             --max-time 60 \
             --user "kirill.diatopp.ee:$FTP_PASSWORD" \
             --list-only \
-            "ftp://ftp.diatopp.ee/"
+            "ftp://sn-69-38.tll07.zoneas.eu/"
           echo "FTPS connection and directory access succeeded."
