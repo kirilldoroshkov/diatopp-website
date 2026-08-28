@@ -16,19 +16,17 @@ jobs:
     steps:
       - name: Connect and list deployment directory
         env:
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$FTP_USERNAME"
           test -n "$FTP_PASSWORD"
           curl --fail --silent --show-error \
             --ssl-reqd \
             --ftp-pasv \
             --connect-timeout 20 \
             --max-time 60 \
-            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            --user "kirill.diatopp.ee:$FTP_PASSWORD" \
             --list-only \
-            "ftp://sn-69-38.tll07.zoneas.eu/"
+            "ftp://ftp.diatopp.ee/"
           echo "FTPS connection and directory access succeeded."
