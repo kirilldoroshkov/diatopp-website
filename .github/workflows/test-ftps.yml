@@ -14,19 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Connect and list deployment directory
+      - name: Find working FTP account and list root
         env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "$FTP_PASSWORD"
-          curl --fail --silent --show-error \
-            --ssl-reqd \
-            --ftp-pasv \
-            --connect-timeout 20 \
-            --max-time 60 \
-            --user "kirill.diatopp.ee:$FTP_PASSWORD" \
-            --list-only \
-            "ftp://sn-69-38.tll07.zoneas.eu/"
-          echo "FTPS connection and directory access succeeded."
+          HOST="sn-69-38.tll07.zoneas.eu"
+          for USERNAME in "$FTP_USERNAME" "kirill.diatopp.ee" "diatopp.diatopp.ee"; do
+            [ -n "$USERNAME" ] || continue
+            echo "Trying FTP account: $USERNAME"
+            if curl --fail --silent --show-error \
+              --ssl-reqd \
+              --ftp-pasv \
+              --connect-timeout 20 \
+              --max-time 60 \
+              --user "$USERNAME:$FTP_PASSWORD" \
+              --list-only \
+              "ftp://$HOST/"; then
+              echo "WORKING_FTP_USERNAME=$USERNAME"
+              exit 0
+            fi
+          done
+          echo "No configured FTP username worked with the stored password."
+          exit 1
